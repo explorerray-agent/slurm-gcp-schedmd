@@ -33,13 +33,41 @@
     cmd: alternatives --set python3 /usr/bin/python3.8
   when: python38_installed
 
-- name: Upgrade Pip
-  pip:
-    name:
-    - pip
+# scripts/*.py carry '{{ python_venv }}/bin/python3' as a literal shebang, which
+# cannot be templated because Terraform ships those files verbatim to running
+# clusters. Catch a python_venv override here rather than at boot. The slurm role
+# runs earlier in the play and has already installed the scripts.
+- name: Stat Installed Scripts
+  ansible.builtin.stat:
+    path: /slurm/scripts/util.py
+  register: python_scripts_util
+
+- name: Read Shebang From Installed Scripts
+  ansible.builtin.command:
+    cmd: head -1 /slurm/scripts/util.py
+  changed_when: false
+  register: python_scripts_shebang
+  when: python_scripts_util.stat.exists
+
+- name: Verify Scripts Agree With python_venv
+  ansible.builtin.assert:
+    that: "python_scripts_shebang.stdout == '#!' ~ python_venv ~ '/bin/python3'"
+    fail_msg: >-
+      python_venv is '{{ python_venv }}' but /slurm/scripts/util.py starts with
+      '{{ python_scripts_shebang.stdout }}'. Update every shebang under scripts/
+      to match, or revert python_venv.
+  when: python_scripts_util.stat.exists
+
+# The pip module's parameters are named virtualenv/virtualenv_command for
+# historical reasons, but what virtualenv_command runs here is the stdlib venv
+# module. The third-party virtualenv tool is not involved and is not installed;
+# see python_packages in vars/ for why python3-venv is the package needed.
+- name: Create Venv
+  ansible.builtin.pip:
+    name: pip
     extra_args: --upgrade
-    executable: pip3
-    state: present
+    virtualenv: '{{ python_venv }}'
+    virtualenv_command: '{{ python_interpreter }} -m venv --copies'
 
 - name: Copy Pip Requirements File
   copy:
@@ -54,13 +82,9 @@
   - '{{ ansible_os_family|lower }}_requirements.txt'
   register: requirements_file
 
-- name: Install pyyaml workaround
-  shell:
-    cmd: pip3 install "Cython<3.0" pyyaml --no-build-isolation
-
 - name: Install Pip Packages
   pip:
     requirements: '{{ requirements_file.results[0].dest }}'
-    extra_args: --upgrade --ignore-installed
-    executable: pip3
+    extra_args: --upgrade
+    virtualenv: '{{ python_venv }}'
     state: present

@@ -14,3 +14,18 @@
 # limitations under the License.
 
 python38_installed: false
+
+# The venv that the slurm-gcp python dependencies are installed into. Ubuntu 24.04
+# marks its system interpreter as externally managed (PEP 668), so the OS pip
+# cannot be used at all.
+#
+# This path is a contract rather than a knob. Every script under scripts/ has
+# '{{ python_venv }}/bin/python3' written out literally as its shebang, and it
+# cannot be templated from here: Terraform ships those files verbatim to running
+# clusters in slurm-gcp-devel.zip, which overwrites anything generated at image
+# build time. Overriding this variable alone therefore breaks every script, so
+# the role asserts that the two agree.
+python_venv: /slurm/python/venv
+
+# Interpreter used to build python_venv.
+python_interpreter: /usr/bin/python3
