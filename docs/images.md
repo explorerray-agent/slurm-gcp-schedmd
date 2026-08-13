@@ -39,6 +39,7 @@ can be created and used instead.
 | debian-cloud           | debian-11             | x86_64 |
 | ubuntu-os-cloud        | ubuntu-2004-lts       | x86_64 |
 | ubuntu-os-cloud        | ubuntu-2204-lts-arm64 | ARM64  |
+| ubuntu-os-cloud        | ubuntu-2404-lts       | x86_64 |
 
 ### Installed Software for HPC
 
@@ -56,6 +57,8 @@ can be created and used instead.
   - Only supports x86_64
   - Client version 2.12-2.15 depending on the package available for the image
     OS.
+  - Not available on Ubuntu 24.04: upstream Whamcloud publishes no `ubuntu2404`
+    client repository. Build 24.04 images with `install_lustre=false`.
 
 ## Public Image
 
@@ -80,6 +83,11 @@ For the [TPU](./glossary.md#tpu) nodes docker images are also released.
 | schedmd-slurm-public | slurm-gcp-6-3-ubuntu-2204-lts-arm64 | ARM64  | Supported      |
 | schedmd-slurm-public | slurm-gcp-6-3-hpc-centos-7-k80      | x86_64 | EOL 2024-05-01 |
 | schedmd-slurm-public | slurm-gcp-6-3-hpc-centos-7          | x86_64 | EOL 2024-01-01 |
+
+> **NOTE:** Ubuntu 24.04 is supported for [custom images](#custom-image) only.
+> SchedMD archived this project before 24.04 was added, so no
+> `slurm-gcp-6-3-ubuntu-2404-lts` family is published under
+> `schedmd-slurm-public`; build your own with the instructions below.
 
 ### Published Docker Image Family
 
