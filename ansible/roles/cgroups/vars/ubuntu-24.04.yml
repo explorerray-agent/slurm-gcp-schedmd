@@ -1,0 +1,60 @@
+---
+# Copyright (C) SchedMD LLC.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Packages for cgroup v2. The other distributions install libcgroup1,
+# libcgroup-dev and libpam-cgroup; none of those are Slurm dependencies.
+# auxdir/x_ac_cgroup.m4 never looks for libcgroup -- Slurm drives the hierarchy
+# through the filesystem directly -- and libpam-cgroup is the v1 PAM module,
+# unrelated to pam_slurm_adopt. They are v1-era userspace tooling, so they are
+# dropped here.
+#
+# What cgroup v2 actually needs:
+#   libdbus-1-dev   auxdir/x_ac_dbus.m4 is PKG_CHECK_MODULES([dbus-1]). Without
+#                   it configure only warns -- "unable to link against dbus-1
+#                   libraries required for cgroup/v2" -- and quietly leaves
+#                   WITH_DBUS off, so the v2 plugin is never built.
+#   dbus            the daemon slurmd talks to at runtime to have systemd
+#                   delegate its cgroup. Present on the GCE image already;
+#                   listed to make the runtime dependency explicit.
+#   linux-libc-dev  provides linux/bpf.h, which x_ac_bpf.m4 needs for the eBPF
+#                   device controller behind ConstrainDevices=yes. Arrives via
+#                   build-essential today; pinned here because cgroup.conf
+#                   depends on it.
+cgroup_packages:
+- libdbus-1-dev
+- dbus
+- linux-libc-dev
+
+# Ubuntu 24.04 boots the unified (v2) hierarchy and it is left that way. Slurm
+# has shipped a cgroup/v2 plugin since 21.08; 23.02 builds both
+# src/plugins/cgroup/v1 and v2, and the slurmd unit installed under
+# --with-systemdsystemunitdir carries the Delegate=yes that v2 requires.
+#
+# The other distributions force the legacy hierarchy back on instead. That is
+# not a Slurm limitation: both grub arguments below are v1-era (swapaccount=1
+# only affects the v1 memsw counter, and cgroup.conf sets ConstrainSwapSpace=no
+# anyway), and systemd 255 has deprecated honouring
+# systemd.unified_cgroup_hierarchy=0. Relying on it here would add risk rather
+# than remove it.
+#
+# The arguments are kept defined so that setting change_grub=true still yields a
+# working v1 configuration; leaving the list empty would make grub_cmdline
+# overwrite GRUB_CMDLINE_LINUX with an empty string.
+change_grub: false
+
+cgroup_grub_cmdline_linux:
+- systemd.unified_cgroup_hierarchy=0
+- cgroup_enable=memory
+- swapaccount=1
