@@ -1,8 +1,11 @@
 ---
 # tasks file for ansible-role-cuda
+# cuda-keyring_1.0-1_all.deb is a 404 under repos/ubuntu2404; NVIDIA only ships
+# 1.1-1 there. 1.1-1 is also served for ubuntu2004, ubuntu2204 and the RedHat
+# subfolders, so this is safe for every distribution the role supports.
 - name: Trust packaging key for Nvidia repositories (apt)
   apt:
-    deb: '{{ cuda_repo_url }}/{{ cuda_repo_subfolder }}/x86_64/cuda-keyring_1.0-1_all.deb'
+    deb: '{{ cuda_repo_url }}/{{ cuda_repo_subfolder }}/x86_64/cuda-keyring_1.1-1_all.deb'
 
 - name: Update apt cache and remove dkms
   apt:

@@ -1,0 +1,6 @@
+---
+# CUDA 12.6.3 / driver 560.35.05. Selected for Ubuntu 24.04: the 'latest' file
+# pins 535.86.10 from July 2023, which predates noble's 6.8 kernel and gcc-13,
+# and the runfile builds its kernel module on the target.
+cuda_runfile_url: https://developer.download.nvidia.com/compute/cuda/12.6.3/local_installers/cuda_12.6.3_560.35.05_linux.run
+nvidia_runfile_url: ''
