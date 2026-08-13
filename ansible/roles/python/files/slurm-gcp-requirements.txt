@@ -1,0 +1,30 @@
+# Python dependencies for the slurm-gcp control scripts, installed into the
+# venv at /slurm/python/venv.
+#
+# One file rather than the per-OS set this repo used to carry: only Ubuntu 24.04
+# is supported, and the per-OS files had drifted apart in ways that mattered --
+# some declared pyyaml and some relied on a shell task to install it.
+#
+# scripts/util.py declares its own required_modules list and exits 1 when any of
+# them is missing, so every entry there must appear here. requests, httplib2 and
+# google-auth-httplib2 were previously satisfied only transitively, through
+# google-api-core and google-api-python-client; they are named explicitly now so
+# that a dependency change upstream cannot silently break the boot.
+#
+# google-cloud-bigquery is ~=3.0 while the rest stay on their historical ranges.
+# No 2.x release installs on python 3.12 at all -- the highest, 2.34.4, declares
+# Requires-Python ">=3.6, <3.11" -- so pip fails outright on noble. load_bq.py
+# survives the major bump: it builds DatasetReference directly rather than
+# through the client.dataset() method that 3.x removed.
+addict~=2.0
+google-api-python-client~=2.0
+google-auth-httplib2~=0.2
+google-cloud-bigquery~=3.0
+google-cloud-secret-manager~=2.0
+google-cloud-storage~=2.0
+google-cloud-tpu~=1.10.0
+httplib2~=0.20
+more-executors~=2.0
+prometheus-client~=0.16
+pyyaml~=6.0
+requests~=2.0
