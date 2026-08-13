@@ -161,9 +161,19 @@ function fetch_feature {
 }
 SLURMD_FEATURE="$(fetch_feature)"
 
+# The python scripts run from the venv built into the image. Fail with a
+# clear message rather than an obscure "bad interpreter" if this revision's
+# scripts have landed on an image that was not built from this repo.
+PYTHON_BIN=/slurm/python/venv/bin/python3
+if [[ ! -x $PYTHON_BIN ]]; then
+	echo "ERROR: $PYTHON_BIN not found; this revision requires an image built from this repo"
+	wall -n '*** Slurm setup failed in the startup script! see `journalctl -u google-startup-scripts` ***'
+	exit 1
+fi
+
 echo "INFO: Running python cluster setup script"
 chmod +x $SETUP_SCRIPT_FILE
-python3 $SCRIPTS_DIR/util.py
+$PYTHON_BIN $SCRIPTS_DIR/util.py
 if [[ -n "$SLURMD_FEATURE" ]]; then
 	echo "INFO: Running dynamic node setup."
 	exec $SETUP_SCRIPT_FILE --slurmd-feature="$SLURMD_FEATURE"

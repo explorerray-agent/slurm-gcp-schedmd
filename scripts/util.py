@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/slurm/python/venv/bin/python3
 
 # Copyright (C) SchedMD LLC.
 #

@@ -135,6 +135,16 @@ examples.
 1. slurmctld
 1. slurmdbd
 1. SrunPortRange
+1. Python at `/slurm/python/venv`, with the slurm-gcp dependencies installed
+   - [slurmctld](./glossary.md#slurmctld) executes `resume.py` and `suspend.py`
+     directly through `ResumeProgram` and `SuspendProgram`, so their shebang,
+     `#!/slurm/python/venv/bin/python3`, must resolve on the controller. There is
+     no `python3 <script>` wrapper.
+   - Controllers built from this repo's images already have it. When provisioning
+     the host yourself, create a venv at that path and install
+     `ansible/roles/python/files/slurm-gcp-requirements.txt` into it. PEP 668
+     makes a system-wide `pip3 install` unavailable on current distributions, so
+     a venv is the only route regardless.
 
 ### Node Addressing
 
